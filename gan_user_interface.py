@@ -11,84 +11,6 @@ Original file is located at
 Beginning of source code for an app/user interface that will allow user to generate faces and control specific features of the face.
 """
 
-!pip install anvil-uplink
-import anvil.server
-anvil.server.connect("35E26GPZIK7KR7BLS3SBP66L-Z7KN2ZG6G7EQCSR2")
-
-# #===============writing html file directly in colab===============
-# %%writefile templates/index.html
-# <!DOCTYPE html>
-# <html >
-# <!--From https://codepen.io/frytyler/pen/EGdtg-->
-# <head>
-#   <meta charset="UTF-8">
-#   <title>SPAM_API</title>
-#   <link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css'>
-# </head>
-# <body>
-#  <div class="login">
-#      <h1>Spam detection</h1>
-#      <!-- Main Input For Receiving Query to our ML -->
-#      <form action="{{ url_for('predict')}}"method="post">
-#      <textarea id="styled" name="message" rows="6" cols="50" placeholder="Enter Your Message Here" required="required" ></textarea>
-#      <button type="submit" class="btn btn-primary btn-block btn-large">Predict</button>
-#     </form>
-#    <br>
-#    <br>
-#    {{ prediction_text }}
-# </div>
-# </body>
-# </html>
-# # #========here is the code for using linux cmd in colab=============
-# # #write the same html file as above
-# # !cd templates
-# # !cat > index.html
-# # #manually open the file and write the html code
-# # #================using sys cmd in python ========================
-# # file = open("/templates/index.html,"w")
-# # html_code = """
-# #      write your html code here
-# #      """
-# # file.writelines(html_code) 
-# # file.close()
-
-# %%writefile app.py
-# #importing libraries
-# import numpy as np
-# from flask import Flask, request, jsonify, render_template
-# from flask_ngrok import run_with_ngrok
-# import pickle
-# #creating the flask object
-# app = Flask(__name__)
-# run_with_ngrok(app)
-# #loading the model weights
-# filename = r"/content/new_nlp_model.pkl"
-# clf = pickle.load(open(filename, 'rb'))
-# cv=pickle.load(open(r"/content/new_tranform.pkl",'rb'))
-# #create routes
-# @app.route('/')
-# def home():
-#     return render_template('index.html')
-# @app.route('/predict',methods=['POST'])
-# def predict():
-#     '''
-#     For rendering results on HTML GUI
-#     '''
-#     if request.method == 'POST':
-#         message = request.form['message']
-#         data = [message]
-#         vect = cv.transform(data).toarray()
-#         my_prediction = clf.predict(vect)
-#         if my_prediction == 1:
-#             output = "a Spam"
-#         elif my_prediction == 0:
-#             output = "Not a Spam"
-    
-#     outputs = 'This email is '+output
-#     return render_template('index2.html', prediction_text=outputs , value=message)
-# if __name__ == "__main__":
-#     app.run()
-
 """##Setup
 Setting up correct runtime, cloning stylegan2, and defining necessary funtions for face generation.
 """
@@ -194,8 +116,6 @@ def show_img(latent):
   img = cv2.imread('/content/image-1.png')   
   cv2_imshow(img)
   
-  # return img # ??
-
 def generate_latent(seed=random.randrange(0,2**32 - 1)):
 
   seed = seed
@@ -204,14 +124,10 @@ def generate_latent(seed=random.randrange(0,2**32 - 1)):
   
   return original_latent
 
-@anvil.server.callable
 def generate_random_and_show():
   latent = generate_latent()
   show_img(latent)
   return latent
-
-# latent = generate_latent(2981344)
-# img = show_img(latent)
 
 """## Manipulate Latent Vector of Original Image"""
 
@@ -224,35 +140,7 @@ def manipulate_vector(original_latent, age=0, gender=0, smile=0, pitch=0, roll=0
   # finish this
   return new_latent
 
-@anvil.server.callable
 def manipulate_and_show(original_latent, age=0, gender=0):
   new_latent = manipulate_vector(original_latent, age=age, gender=gender)
   show_img(new_latent)
   return new_latent
-
-# # new_latent = original_latent + latent_controls['gender']*40 + latent_controls['age']*0
-# new_latent = manipulate_vector(latent, gender = 40)
-
-# show_img(new_latent)
-
-# import cv2 
-# from google.colab.patches import cv2_imshow
-
-# # 8227
-# for i in range(0,10):
-#   z = [i for j in range(512)]
-#   print(z)
-#   # seeds = expand_seed([z], vector_size)
-#   generate_images(Gs, [np.array([z])], 0.5, "image")
-#   img = cv2.imread('/content/image-1.png')   
-#   cv2_imshow(img)
-
-# for i in range(0,10):
-#   z = 0+i
-#   print(i)
-#   seeds = expand_seed([z], vector_size) + latent_controls["age"]*10
-#   generate_images(Gs, seeds, 0.5, "image")
-#   img = cv2.imread('/content/image-1.png')   
-#   cv2_imshow(img)
-
-anvil.server.wait_forever()
